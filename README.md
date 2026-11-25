@@ -56,18 +56,18 @@ Confirmado ou Não enviou. Só contas com `role = admin` entram; cadastro públi
 |---|---|---|---|
 | Production | push na `main` | branch `main` do Neon | store de produção |
 | Preview (testes) | push em qualquer outra branch / PR | branch do Neon criada automaticamente por deploy | store de dev |
-| Development | `npm run dev` local | branch `dev` do Neon (ou PGlite, sem `DATABASE_URL`) | store de dev |
+| Development | `npm run dev` local | PGlite local (sem `DATABASE_URL`) | store de dev |
 
 1. Importe o repositório na Vercel (framework Next.js).
-2. **Neon pela integração da Vercel** (Storage → Neon): conecte ao projeto marcando Production, Preview e Development
-   e ative a criação de branch do banco para cada Preview. Ela injeta `DATABASE_URL` em cada ambiente.
+2. **Neon pela integração da Vercel** (Storage → Neon, região São Paulo): conecte só a Production e Preview,
+   marque "Create database branch" apenas para Preview e use o prefixo `DATABASE` (gera `DATABASE_URL`).
+   Development fica fora para o `npm run dev` nunca apontar para o banco de produção.
 3. **Blob**: dois stores, um conectado só a Production e outro a Preview + Development, para teste nunca apagar foto real.
 4. Variáveis:
    - `BETTER_AUTH_SECRET`: um valor diferente para Production e outro para Preview/Development.
    - `BETTER_AUTH_URL`: só em Production (ex.: `https://catalogos-cardapios-core.vercel.app`). No Preview o código usa o `VERCEL_URL`.
 5. As migrações rodam sozinhas no build da Vercel (`vercel-build`). Depois do primeiro deploy, crie seu admin:
    ```bash
-   vercel env pull .env.local           # traz o DATABASE_URL de Development
    DATABASE_URL="<url de produção>" npm run criar-admin -- voce@email.com "senha" "Nome"
    ```
 
