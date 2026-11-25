@@ -7,6 +7,10 @@ import { db } from "../src/db";
 
 async function main() {
   const url = process.env.DATABASE_URL ?? "";
+  if (process.env.VERCEL && !url.startsWith("postgres")) {
+    console.warn("DATABASE_URL não configurada neste ambiente da Vercel: migrações puladas.");
+    return;
+  }
   if (url.startsWith("postgres")) {
     const { migrate } = await import("drizzle-orm/neon-http/migrator");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -50,15 +50,25 @@ No front, use `revalidate: 60` e trate erro da API mantendo o último catálogo 
 (fotos redimensionadas para 1200 px em WebP no navegador e enviadas ao Vercel Blob) e marcar solicitações como
 Confirmado ou Não enviou. Só contas com `role = admin` entram; cadastro público fica desligado.
 
-## Deploy na Vercel
+## Deploy na Vercel (ambientes)
+
+| Ambiente Vercel | Quando | Banco (Neon) | Blob |
+|---|---|---|---|
+| Production | push na `main` | branch `main` do Neon | store de produção |
+| Preview (testes) | push em qualquer outra branch / PR | branch do Neon criada automaticamente por deploy | store de dev |
+| Development | `npm run dev` local | branch `dev` do Neon (ou PGlite, sem `DATABASE_URL`) | store de dev |
 
 1. Importe o repositório na Vercel (framework Next.js).
-2. Em **Storage**, crie um banco **Neon** (ou cole a connection string em `DATABASE_URL`) e um **Blob store** (gera `BLOB_READ_WRITE_TOKEN`).
-3. Variáveis: `BETTER_AUTH_SECRET` e `BETTER_AUTH_URL` (ex.: `https://catalogos-cardapios-core.vercel.app`).
-4. Rode as migrações e crie seu admin apontando para o Neon:
+2. **Neon pela integração da Vercel** (Storage → Neon): conecte ao projeto marcando Production, Preview e Development
+   e ative a criação de branch do banco para cada Preview. Ela injeta `DATABASE_URL` em cada ambiente.
+3. **Blob**: dois stores, um conectado só a Production e outro a Preview + Development, para teste nunca apagar foto real.
+4. Variáveis:
+   - `BETTER_AUTH_SECRET`: um valor diferente para Production e outro para Preview/Development.
+   - `BETTER_AUTH_URL`: só em Production (ex.: `https://catalogos-cardapios-core.vercel.app`). No Preview o código usa o `VERCEL_URL`.
+5. As migrações rodam sozinhas no build da Vercel (`vercel-build`). Depois do primeiro deploy, crie seu admin:
    ```bash
-   DATABASE_URL="postgresql://..." npm run db:migrate
-   DATABASE_URL="postgresql://..." npm run criar-admin -- voce@email.com "senha" "Nome"
+   vercel env pull .env.local           # traz o DATABASE_URL de Development
+   DATABASE_URL="<url de produção>" npm run criar-admin -- voce@email.com "senha" "Nome"
    ```
 
 ## Estrutura

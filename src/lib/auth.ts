@@ -4,7 +4,17 @@ import { nextCookies } from "better-auth/next-js";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 
+/**
+ * Produção usa BETTER_AUTH_URL. Nos deploys de Preview a URL muda a cada deploy,
+ * então caímos no VERCEL_URL que a própria Vercel injeta.
+ */
+const baseURL =
+  process.env.VERCEL_ENV === "preview" && process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.BETTER_AUTH_URL;
+
 export const auth = betterAuth({
+  baseURL,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
